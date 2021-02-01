@@ -1,0 +1,119 @@
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: "10.0.0.11"
+  bindPort: 5443
+nodeRegistration:
+  criSocket: unix:///run/containerd/containerd.sock
+  kubeletExtraArgs:
+    # fix system container stats, refs: https://github.com/kubernetes/kubernetes/issues/56850
+    runtime-cgroups: /systemd/system.slice
+    kubelet-cgroups: /systemd/system.slice
+# kubeadm alpha certs certificate-key
+certificateKey: 7373f829c733b46fb78f0069f90185e0f00254381641d8d5a7c5984b2cf17cd3 
+---
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: ClusterConfiguration
+clusterName: "kuberentes"
+kubernetesVersion: "v1.20.2"
+certificatesDir: "/etc/kubernetes/pki"
+controlPlaneEndpoint: "127.0.0.1:6443"
+etcd:
+  external:
+    endpoints:
+    - "https://10.0.0.11:2379"
+    - "https://10.0.0.12:2379"
+    - "https://10.0.0.13:2379"
+    caFile: "/etc/etcd/ssl/etcd-ca.pem"
+    certFile: "/etc/etcd/ssl/etcd.pem"
+    keyFile: "/etc/etcd/ssl/etcd-key.pem"
+networking:
+  serviceSubnet: "10.66.0.0/16"
+  podSubnet: "10.88.0.1/16"
+  dnsDomain: "cluster.local"
+apiServer:
+  extraArgs:
+    v: "4"
+    alsologtostderr: "true"
+#    audit-log-maxage: "21"
+#    audit-log-maxbackup: "10"
+#    audit-log-maxsize: "100"
+#    audit-log-path: "/var/log/kube-audit/audit.log"
+#    audit-policy-file: "/etc/kubernetes/audit-policy.yaml"
+    authorization-mode: "Node,RBAC"
+    event-ttl: "720h"
+    runtime-config: "api/all=true"
+    service-node-port-range: "30000-50000"
+    service-cluster-ip-range: "10.66.0.0/16"
+#    insecure-bind-address: "0.0.0.0"
+#    insecure-port: "8080"
+    # The fraction of requests that will be closed gracefully(GOAWAY) to prevent
+    # HTTP/2 clients from getting stuck on a single apiserver.
+    goaway-chance: "0.001"
+#  extraVolumes:
+#  - name: "audit-config"
+#    hostPath: "/etc/kubernetes/audit-policy.yaml"
+#    mountPath: "/etc/kubernetes/audit-policy.yaml"
+#    readOnly: true
+#    pathType: "File"
+#  - name: "audit-log"
+#    hostPath: "/var/log/kube-audit"
+#    mountPath: "/var/log/kube-audit"
+#    pathType: "DirectoryOrCreate"
+  certSANs:
+  - "*.kubernetes.node"
+  - "10.0.0.11"
+  - "10.0.0.12"
+  - "10.0.0.13"
+  timeoutForControlPlane: 1m
+controllerManager:
+  extraArgs:
+    v: "4"
+    node-cidr-mask-size: "19"
+    deployment-controller-sync-period: "10s"
+    experimental-cluster-signing-duration: "8670h"
+    node-monitor-grace-period: "20s"
+    pod-eviction-timeout: "2m"
+    terminated-pod-gc-threshold: "30"
+scheduler:
+  extraArgs:
+    v: "4"
+---
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+# kubelet specific options here
+failSwapOn: false
+nodeStatusUpdateFrequency: 5s
+evictionSoft:
+  "imagefs.available": "15%"
+  "memory.available": "512Mi"
+  "nodefs.available": "15%"
+  "nodefs.inodesFree": "10%"
+evictionSoftGracePeriod:
+  "imagefs.available": "3m"
+  "memory.available": "1m"
+  "nodefs.available": "3m"
+  "nodefs.inodesFree": "1m"
+evictionHard:
+  "imagefs.available": "10%"
+  "memory.available": "256Mi"
+  "nodefs.available": "10%"
+  "nodefs.inodesFree": "5%"
+evictionMaxPodGracePeriod: 30
+imageGCLowThresholdPercent: 70
+imageGCHighThresholdPercent: 80
+kubeReserved:
+  "cpu": "500m"
+  "memory": "512Mi"
+  "ephemeral-storage": "1Gi"
+rotateCertificates: true
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+# kube-proxy specific options here
+clusterCIDR: "10.88.0.1/16"
+mode: "ipvs"
+ipvs:
+  minSyncPeriod: 5s
+  syncPeriod: 5s
+  scheduler: "wrr"
