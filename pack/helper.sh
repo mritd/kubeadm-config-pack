@@ -13,7 +13,10 @@ function install(){
     ${INSTALL_CMD} -o root -g root -m 0644 conf/kubeadm.yaml ${CONFIG_PATH}
 
     info "install addons..."
-    ${INSTALL_CMD} -d -o root -g root -m 755 conf/addons ${ADDONS_PATH}
+    cp -r conf/addons ${ADDONS_PATH}
+    find ${ADDONS_PATH} -type d -exec chmod 0755 {} \;
+    find ${ADDONS_PATH} -type f -exec chmod 0644 {} \;
+    chown -R root:root ${ADDONS_PATH}
 
     info "install containerd config..."
     ${INSTALL_CMD} -D -o root -g root -m 0644 conf/containerd.toml ${CONTAINERD_CONFIG_PATH}

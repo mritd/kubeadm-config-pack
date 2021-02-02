@@ -6,9 +6,7 @@ localAPIEndpoint:
 nodeRegistration:
   criSocket: unix:///run/containerd/containerd.sock
   kubeletExtraArgs:
-    # fix system container stats, refs: https://github.com/kubernetes/kubernetes/issues/56850
-    runtime-cgroups: /systemd/system.slice
-    kubelet-cgroups: /systemd/system.slice
+    runtime-cgroups: "/system.slice/containerd.service"
 # kubeadm alpha certs certificate-key
 certificateKey: 7373f829c733b46fb78f0069f90185e0f00254381641d8d5a7c5984b2cf17cd3 
 ---
@@ -17,6 +15,8 @@ kind: ClusterConfiguration
 clusterName: "kuberentes"
 kubernetesVersion: "v1.20.2"
 certificatesDir: "/etc/kubernetes/pki"
+# Other components of the current control plane only connect to the apiserver on the current host.
+# This is the expected behavior, see: https://github.com/kubernetes/kubeadm/issues/2271
 controlPlaneEndpoint: "127.0.0.1:6443"
 etcd:
   external:
@@ -81,8 +81,9 @@ scheduler:
 ---
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
-# kubelet specific options here
 failSwapOn: false
+cgroupDriver: "systemd"
+kubeletCgroups: "/system.slice/kubelet.service"
 nodeStatusUpdateFrequency: 5s
 evictionSoft:
   "imagefs.available": "15%"
