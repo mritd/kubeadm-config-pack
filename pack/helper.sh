@@ -7,6 +7,10 @@ CONFIG_PATH="/etc/kubernetes/kubeadm.yaml"
 ADDONS_PATH="/etc/kubernetes/addons"
 CONTAINERD_CONFIG_PATH="/etc/containerd/config.toml"
 CRICTL_CONFIG="/etc/crictl.yaml"
+# containerd will use the namespace to isolate resources, and cri will
+# always use the "k8s.io" namespace in the implementation of containerd.
+# see: https://github.com/containerd/containerd/blob/ccde82da2b46b0a4d4cf24576c2499288594df96/pkg/cri/constants/constants.go#L23
+CTR_NAMESPACE="k8s.io"
 
 function install(){
     info "install kubeadm config..."
@@ -47,7 +51,7 @@ function uninstall(){
 
 function load(){
     info "load oci images..."
-    ctr images import kubeadm_*.tar
+    ctr -n ${CTR_NAMESPACE} images import kubeadm_*.tar
 }
 
 function info(){
