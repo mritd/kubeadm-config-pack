@@ -69,6 +69,9 @@ function err(){
 case "${2}" in
     "install")
         install
+        if [ "${3}" == "--load" ]; then
+            load
+        fi
         ;;
     "uninstall")
         uninstall
