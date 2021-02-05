@@ -2,7 +2,7 @@ apiVersion: kubeadm.k8s.io/v1beta2
 kind: InitConfiguration
 # kubeadm token create
 bootstrapTokens:
-- "c2t0rj.cofbfnwwrb387890"
+- token: "c2t0rj.cofbfnwwrb387890"
 nodeRegistration:
   criSocket: unix:///run/containerd/containerd.sock
   kubeletExtraArgs:
