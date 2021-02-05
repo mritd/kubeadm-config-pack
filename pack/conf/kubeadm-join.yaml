@@ -9,6 +9,10 @@ discovery:
   bootstrapToken:
     apiServerEndpoint: "127.0.0.1:6443"
     token: "c2t0rj.cofbfnwwrb387890"
+    # Please replace with the "--discovery-token-ca-cert-hash" value printed
+    # after the kubeadm init command is executed successfully
+    caCertHashes:
+    - "sha256:97590810ae34a82501717e33acfca76f16044f1a365c5ad9a1c66433c386c75c"
 nodeRegistration:
   criSocket: unix:///run/containerd/containerd.sock
   kubeletExtraArgs:
