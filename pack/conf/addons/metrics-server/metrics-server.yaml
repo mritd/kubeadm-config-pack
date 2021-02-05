@@ -128,14 +128,11 @@ spec:
         k8s-app: metrics-server
     spec:
       containers:
-      # see: https://github.com/kubernetes-sigs/metrics-server/issues/95#issuecomment-413229820
-      # TODO: test rotate-server-certificates CSR
       - args:
         - --cert-dir=/tmp
         - --secure-port=4443
-        - --kubelet-preferred-address-types=Hostname,InternalDNS,InternalIP,ExternalDNS,ExternalIP
+        - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
         - --kubelet-use-node-status-port
-        - --kubelet-insecure-tls
         image: k8s.gcr.io/metrics-server/metrics-server:v0.4.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
