@@ -3,9 +3,9 @@
 set -e
 
 INSTALL_CMD=$(which install)
-CONFIG_PATH="/etc/kubernetes/kubeadm.yaml"
+CONFIG_PATH="/etc/kubernetes"
 ADDONS_PATH="/etc/kubernetes/addons"
-CONTAINERD_CONFIG_PATH="/etc/containerd/config.toml"
+CONTAINERD_CONFIG="/etc/containerd/config.toml"
 CRICTL_CONFIG="/etc/crictl.yaml"
 # containerd will use the namespace to isolate resources, and cri will
 # always use the "k8s.io" namespace in the implementation of containerd.
@@ -14,7 +14,7 @@ CTR_NAMESPACE="k8s.io"
 
 function install(){
     info "install kubeadm config..."
-    ${INSTALL_CMD} -o root -g root -m 0644 conf/kubeadm.yaml ${CONFIG_PATH}
+    ${INSTALL_CMD} -o root -g root -m 0644 conf/kubeadm*.yaml ${CONFIG_PATH}
 
     info "install addons..."
     cp -r conf/addons ${ADDONS_PATH}
@@ -23,7 +23,7 @@ function install(){
     chown -R root:root ${ADDONS_PATH}
 
     info "install containerd config..."
-    ${INSTALL_CMD} -D -o root -g root -m 0644 conf/containerd.toml ${CONTAINERD_CONFIG_PATH}
+    ${INSTALL_CMD} -D -o root -g root -m 0644 conf/containerd.toml ${CONTAINERD_CONFIG}
 
     info "restart containerd..."
     systemctl restart containerd
@@ -34,13 +34,13 @@ function install(){
 
 function uninstall(){
     info "remove kubeadm config..."
-    rm -f ${CONFIG_PATH}
+    rm -f ${CONFIG_PATH}/kubeadm*.yaml
 
     info "remove addons..."
     rm -rf ${ADDONS_PATH}
 
     info "remove containerd config..."
-    rm -f ${CONTAINERD_CONFIG_PATH}
+    rm -f ${CONTAINERD_CONFIG}
 
     info "restart containerd..."
     systemctl restart containerd
