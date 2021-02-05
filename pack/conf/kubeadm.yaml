@@ -1,14 +1,18 @@
 apiVersion: kubeadm.k8s.io/v1beta2
 kind: InitConfiguration
-localAPIEndpoint:
-  advertiseAddress: "10.0.0.11"
-  bindPort: 5443
+# kubeadm token create
+bootstrapTokens:
+- "c2t0rj.cofbfnwwrb387890"
 nodeRegistration:
   criSocket: unix:///run/containerd/containerd.sock
   kubeletExtraArgs:
     runtime-cgroups: "/system.slice/containerd.service"
-# kubeadm alpha certs certificate-key
-certificateKey: 7373f829c733b46fb78f0069f90185e0f00254381641d8d5a7c5984b2cf17cd3 
+    rotate-server-certificates: "true"
+localAPIEndpoint:
+  advertiseAddress: "10.0.0.11"
+  bindPort: 5443
+# kubeadm certs certificate-key
+certificateKey: 31f1e534733a1607e5ba67b2834edd3a7debba41babb1fac1bee47072a98d88b
 ---
 apiVersion: kubeadm.k8s.io/v1beta2
 kind: ClusterConfiguration
@@ -82,9 +86,11 @@ scheduler:
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
 failSwapOn: false
+oomScoreAdj: -900
 cgroupDriver: "systemd"
 kubeletCgroups: "/system.slice/kubelet.service"
 nodeStatusUpdateFrequency: 5s
+rotateCertificates: true
 evictionSoft:
   "imagefs.available": "15%"
   "memory.available": "512Mi"
@@ -114,6 +120,7 @@ kind: KubeProxyConfiguration
 # kube-proxy specific options here
 clusterCIDR: "10.88.0.1/16"
 mode: "ipvs"
+oomScoreAdj: -900
 ipvs:
   minSyncPeriod: 5s
   syncPeriod: 5s

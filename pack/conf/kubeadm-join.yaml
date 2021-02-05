@@ -1,0 +1,16 @@
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: JoinConfiguration
+controlPlane:
+  localAPIEndpoint:
+    advertiseAddress: "10.0.0.12"
+    bindPort: 5443
+  certificateKey: 31f1e534733a1607e5ba67b2834edd3a7debba41babb1fac1bee47072a98d88b
+discovery:
+  bootstrapToken:
+    apiServerEndpoint: "127.0.0.1:6443"
+    token: "c2t0rj.cofbfnwwrb387890"
+nodeRegistration:
+  criSocket: unix:///run/containerd/containerd.sock
+  kubeletExtraArgs:
+    runtime-cgroups: "/system.slice/containerd.service"
+    rotate-server-certificates: "true"
