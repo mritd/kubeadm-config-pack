@@ -3,5 +3,5 @@
 set -e
 
 helm repo add traefik https://helm.traefik.io/traefik
-helm update
+helm repo update
 helm install --values=./custom-values.yml --namespace=kube-addons traefik traefik/traefik
