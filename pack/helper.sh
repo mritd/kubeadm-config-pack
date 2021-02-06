@@ -18,8 +18,6 @@ function install(){
 
     info "install addons..."
     cp -r conf/addons ${ADDONS_PATH}
-    find ${ADDONS_PATH} -type d -exec chmod 0755 {} \;
-    find ${ADDONS_PATH} -type f -exec chmod 0644 {} \;
     chown -R root:root ${ADDONS_PATH}
 
     info "install containerd config..."
