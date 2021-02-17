@@ -113,7 +113,6 @@ kubeReserved:
   "cpu": "500m"
   "memory": "512Mi"
   "ephemeral-storage": "1Gi"
-rotateCertificates: true
 ---
 apiVersion: kubeproxy.config.k8s.io/v1alpha1
 kind: KubeProxyConfiguration
