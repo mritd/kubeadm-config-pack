@@ -1,8 +1,9 @@
+fullnameOverride: "traefik"
 # Default values for Traefik
 image:
   name: traefik
   # defaults to appVersion
-  tag: ""
+  tag: "2.4.8"
   pullPolicy: IfNotPresent
 
 #
@@ -16,6 +17,8 @@ deployment:
   replicas: 1
   # Additional deployment annotations (e.g. for jaeger-operator sidecar injection)
   annotations: {}
+  # Additional deployment labels (e.g. for filtering deployment by custom labels)
+  labels: {}
   # Additional pod annotations (e.g. for mesh injection or prometheus scraping)
   podAnnotations: {}
   # Additional Pod labels (e.g. for filtering Pod by custom labels)
@@ -66,6 +69,8 @@ ingressClass:
 pilot:
   enabled: false
   token: ""
+  # Toggle Pilot Dashboard
+  # dashboard: false
 
 # Enable experimental features
 experimental:
@@ -103,6 +108,7 @@ providers:
       # - "default"
   kubernetesIngress:
     enabled: true
+    # labelSelector: environment=production,method=traefik
     namespaces: []
       # - "default"
     # IP used for Kubernetes Ingress endpoints
@@ -118,6 +124,8 @@ providers:
 # After the volume has been mounted, add the configs into traefik by using the `additionalArguments` list below, eg:
 # additionalArguments:
 # - "--providers.file.filename=/config/dynamic.toml"
+# - "--ping"
+# - "--ping.entrypoint=web"
 volumes: []
 # - name: public-cert
 #   mountPath: "/certs"
@@ -175,8 +183,10 @@ logs:
           # Content-Type: keep
 
 globalArguments:
-  - "--global.checknewversion=false"
-  - "--global.sendanonymoususage=false"
+  - "--global.checknewversion"
+  - "--global.sendanonymoususage"
+  - "--entryPoints.web.forwardedHeaders.insecure"
+  - "--entryPoints.websecure.forwardedHeaders.insecure"
 
 #
 # Configure Traefik static configuration
@@ -223,22 +233,26 @@ ports:
     # only.
     # hostIP: 192.168.100.10
 
+    # Override the liveness/readiness port. This is useful to integrate traefik
+    # with an external Load Balancer that performs healthchecks.
+    # healthchecksPort: 9000
+
     # Defines whether the port is exposed if service.type is LoadBalancer or
     # NodePort.
     #
     # You SHOULD NOT expose the traefik port on production deployments.
     # If you want to access it from outside of your cluster,
     # use `kubectl port-forward` or create a secure ingress
-    expose: true
+    expose: false
     # The exposed port for this service
-    exposedPort: 2180
+    exposedPort: 9000
     # The port protocol (TCP/UDP)
     protocol: TCP
   web:
     port: 2080
     # hostPort: 8000
     expose: true
-    exposedPort: 2080
+    exposedPort: 80
     # The port protocol (TCP/UDP)
     protocol: TCP
     # Use nodeport if set. This is useful if you have configured Traefik in a
@@ -252,7 +266,7 @@ ports:
     port: 2443
     # hostPort: 8443
     expose: true
-    exposedPort: 2443
+    exposedPort: 443
     # The port protocol (TCP/UDP)
     protocol: TCP
     # nodePort: 32443
@@ -327,6 +341,7 @@ autoscaling:
 # It will persist TLS certificates.
 persistence:
   enabled: false
+  name: data
 #  existingClaim: ""
   accessMode: ReadWriteOnce
   size: 128Mi
@@ -362,13 +377,13 @@ serviceAccount:
 # Additional serviceAccount annotations (e.g. for oidc authentication)
 serviceAccountAnnotations: {}
 
-resources: {}
-  # requests:
-  #   cpu: "100m"
-  #   memory: "50Mi"
-  # limits:
-  #   cpu: "300m"
-  #   memory: "150Mi"
+resources:
+  requests:
+    cpu: "100m"
+    memory: "50Mi"
+  limits:
+    cpu: "300m"
+    memory: "150Mi"
 affinity: {}
 # # This example pod anti-affinity forces the scheduler to put traefik pods
 # # on nodes where no other traefik pods are scheduled.
@@ -401,3 +416,4 @@ securityContext:
 
 podSecurityContext:
   fsGroup: 65532
+
