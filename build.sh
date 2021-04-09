@@ -9,7 +9,7 @@ MAKESELF_INSTALL_DIR=$(mktemp -d makeself.XXXXXX)
 check_version(){
     if [ -z "${VERSION}" ]; then
         warn "kubernetes version not specified, use default version 1.20.2."
-        VERSION="1.20.2"
+        VERSION="1.21.0"
     fi
     IMAGE_LIST=$(kubeadm config images list --kubernetes-version v${VERSION})
 }
